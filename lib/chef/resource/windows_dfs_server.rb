@@ -69,7 +69,10 @@ class Chef
         description "Configure DFS settings."
 
         converge_if_changed do
-          powershell_exec("Set-DfsnServerConfiguration -ComputerName '#{ENV["COMPUTERNAME"]}' EnableSiteCostedReferrals $#{new_resource.enable_site_costed_referrals} -UseFqdn $#{new_resource.use_fqdn} -LdapTimeoutSec #{new_resource.ldap_timeout_secs} -PreferLogonDC $#{new_resource.prefer_login_dc} -SyncIntervalSec #{new_resource.sync_interval_secs}")
+          dfs_cmd = "Set-DfsnServerConfiguration -ComputerName '#{ENV["COMPUTERNAME"]}' -UseFqdn $#{new_resource.use_fqdn} -LdapTimeoutSec #{new_resource.ldap_timeout_secs} -SyncIntervalSec #{new_resource.sync_interval_secs}"
+          dfs_cmd << " -EnableSiteCostedReferrals $#{new_resource.enable_site_costed_referrals}" if new_resource.enable_site_costed_referrals != current_resource.enable_site_costed_referrals
+          dfs_cmd << " -PreferLogonDC $#{new_resource.prefer_login_dc}" if new_resource.prefer_login_dc != current_resource.prefer_login_dc
+          powershell_exec!(dfs_cmd)
         end
       end
     end
