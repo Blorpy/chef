@@ -24,11 +24,11 @@ describe Chef::Resource::WindowsShare, :windows_only do
   let(:share_name) { "fake_share" }
   let(:path) { ENV["temp"] }
   let(:concurrent_user_limit) { 7 }
-  let(:full_users) { ["#{ENV["USERDOMAIN"]}\\#{ENV["USERNAME"]}"] }
+  let(:full_users) { ["#{ENV["USERNAME"]}"] }
 
   let(:run_context) do
     node = Chef::Node.new
-    node.consume_external_attrs(OHAI_SYSTEM.data, {}) # node[:languages][:powershell][:version]
+    node.default["hostname"] = ENV["COMPUTERNAME"]
     Chef::RunContext.new(node, {}, Chef::EventDispatch::Dispatcher.new)
   end
 
@@ -54,7 +54,7 @@ describe Chef::Resource::WindowsShare, :windows_only do
       share = get_installed_share
       expect(share["Name"]).to eq(share_name)
       expect(share["Path"]).to eq(path)
-      expect([get_installed_share_access["AccountName"]]).to eq(full_users)
+      expect(get_installed_share_access["AccountName"]).to eq("#{ENV["COMPUTERNAME"]}\\#{full_users[0]}")
     end
 
     it "does not create share if it already exists" do
